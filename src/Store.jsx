@@ -1,7 +1,10 @@
 import React from 'react'
-import {createStore} from 'redux'
+import { composeWithDevToolsLogOnly } from '@redux-devtools/extension';
+import { createStore, applyMiddleware } from 'redux'
+import { thunk } from 'redux-thunk';
 const ADD_TASK = 'task/add'
 const DELETE_TASK = 'task/delete'
+const FETCH_TASK = 'task/fetch'
 
 const initialState = {
     task: []
@@ -22,20 +25,38 @@ const taskReducer = (state = initialState, action) => {
                 ...state,
                 task: updateTask
             }
+        case FETCH_TASK:
+            return {
+                ...state,
+                task: [...state.task, ...action.payload]
+            }
         default:
             return state
     }
 }
 
-const store = createStore(taskReducer)
+export const store = createStore(taskReducer, composeWithDevToolsLogOnly(applyMiddleware(thunk)))
 console.log(store)
 
-const addTask = (data) => {
-    return {type: ADD_TASK, payload: data}
+export const addTask = (data) => {
+    return { type: ADD_TASK, payload: data }
 }
 
-const delTask = (id) => {
-    return {type: DELETE_TASK, payload: id}
+export const delTask = (id) => {
+    return { type: DELETE_TASK, payload: id }
+}
+
+export const fetchTask = () => {
+    return async (dispatch) => {
+        try {
+            const res = await fetch("https://jsonplaceholder.typicode.com/todos?_limit=3")
+            const task = await res.json()
+            // console.log(task)
+            dispatch({ type: FETCH_TASK, payload: task.map((curr) => curr.title) })
+        } catch (error) {
+            console.log(error)
+        }
+    }
 }
 
 // store.dispatch({type: ADD_TASK, payload: "Hello1"})
@@ -48,12 +69,3 @@ const delTask = (id) => {
 // console.log(store.getState())
 
 store.dispatch(addTask("Hello"))
-console.log(store.getState())
-
-store.dispatch(addTask("Hey"))
-console.log(store.getState())
-
-store.dispatch(delTask(1))
-console.log(store.getState())
-
-export default Store;
