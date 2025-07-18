@@ -1,11 +1,7 @@
-import Store from "./Store"
+import Todo from "./Todo"
 
 function App() {
-  return (
-    <>
-      <Store />
-    </>
-  )
+  return <Todo />
 }
 
 export default App
